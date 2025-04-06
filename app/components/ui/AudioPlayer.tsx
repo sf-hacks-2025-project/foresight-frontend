@@ -117,21 +117,11 @@ export function AudioPlayer({ audioURL, audioRef }: AudioPlayerProps) {
       element.muted = true // Start muted (helps with autoplay)
       element.setAttribute("playsinline", "") // Important for iOS
       element.setAttribute("webkit-playsinline", "") // For older iOS
-      element.setAttribute("autoplay", "") // Try native autoplay attribute
-      element.load()
+      element.load() // Load the audio but don't try to autoplay with attribute
 
-      // Unmute after a short delay (after autoplay hopefully succeeds)
+      // Unmute after a short delay
       setTimeout(() => {
-        if (element.paused) {
-          // If still paused, try playing again
-          element.play().catch(() => {
-            // Silent catch - we'll handle errors elsewhere
-            element.muted = false
-          })
-        } else {
-          // If playing, unmute
-          element.muted = false
-        }
+        element.muted = false
       }, 1000)
 
       return () => {
@@ -180,63 +170,37 @@ export function AudioPlayer({ audioURL, audioRef }: AudioPlayerProps) {
     element.volume = 0 // Start with volume at 0
     element.currentTime = 0 // Reset to beginning
 
+    // Use a single play attempt with gradual volume increase
     const playAttempt = element
       .play()
       .then(() => {
         console.log("[AudioPlayer] Delayed autoplay successful after user interaction")
-
-        // If successful, pause immediately to not miss the beginning
-        element.pause()
-        element.currentTime = 0 // Rewind to beginning again
-
-        // Small delay to ensure everything is ready
-        const timeoutId = setTimeout(() => {
-          // Play again from the beginning
-          element
-            .play()
-            .then(() => {
-              // Gradually increase volume
-              let vol = 0
-              volumeInterval = setInterval(() => {
-                if (vol < 1) {
-                  vol += 0.1
-                  element.volume = Math.min(vol, 1)
-                } else if (volumeInterval) {
-                  clearInterval(volumeInterval)
-                  volumeInterval = null
-                }
-              }, 100)
-            })
-            .catch((e) => {
-              console.error("[AudioPlayer] Second play attempt failed:", e)
-              element.volume = 1
-            })
+        
+        // Gradually increase volume
+        let vol = 0
+        volumeInterval = setInterval(() => {
+          if (vol < 1) {
+            vol += 0.1
+            element.volume = Math.min(vol, 1)
+          } else if (volumeInterval) {
+            clearInterval(volumeInterval)
+            volumeInterval = null
+          }
         }, 100)
-
-        // Return the timeout ID for cleanup
-        return timeoutId
       })
       .catch((e) => {
-        console.error("[AudioPlayer] Delayed autoplay still failed:", e)
+        console.error("[AudioPlayer] Delayed autoplay failed:", e)
         element.volume = 1
-        return null
       })
 
     // Clean up function
     return () => {
-      // Cancel the play attempt if possible
-      if (playAttempt) {
-        playAttempt.then((timeoutId) => {
-          if (timeoutId) clearTimeout(timeoutId)
-        })
-      }
-
       // Clear volume interval if it exists
       if (volumeInterval) {
         clearInterval(volumeInterval)
       }
     }
-  }, [hasUserInteracted, audioURL, isPlaying, audioRef, isMobile])
+  }, [hasUserInteracted, audioURL, isPlaying, audioRef])
 
   useEffect(() => {
     hasTriedAutoplayAfterInteractionRef.current = false
@@ -254,7 +218,6 @@ export function AudioPlayer({ audioURL, audioRef }: AudioPlayerProps) {
 
     // Store any setInterval or setTimeout IDs for cleanup
     let volumeInterval: NodeJS.Timeout | null = null
-    let delayTimeout: NodeJS.Timeout | null = null
 
     // Use a user activation event to trigger playback
     const playPromise = element.play()
@@ -263,40 +226,22 @@ export function AudioPlayer({ audioURL, audioRef }: AudioPlayerProps) {
       playPromise
         .then(() => {
           console.log("[AudioPlayer] Autoplay successful, gradually increasing volume")
-
-          // If successful, pause immediately to not miss the beginning
-          element.pause()
-
-          // Rewind to beginning again
-          element.currentTime = 0
-
-          // Small delay to ensure everything is ready
-          delayTimeout = setTimeout(() => {
-            // Play again from the beginning
-            element
-              .play()
-              .then(() => {
-                // Now gradually increase volume
-                let vol = 0
-                volumeInterval = setInterval(() => {
-                  if (vol < 1) {
-                    vol += 0.1
-                    element.volume = Math.min(vol, 1)
-                  } else if (volumeInterval) {
-                    clearInterval(volumeInterval)
-                    volumeInterval = null
-                  }
-                }, 100)
-              })
-              .catch((e) => {
-                console.error("[AudioPlayer] Second play attempt failed:", e)
-                element.volume = 1
-              })
+          
+          // Now gradually increase volume - we're NOT pausing and playing again
+          // which was causing the AbortError
+          let vol = 0
+          volumeInterval = setInterval(() => {
+            if (vol < 1) {
+              vol += 0.1
+              element.volume = Math.min(vol, 1)
+            } else if (volumeInterval) {
+              clearInterval(volumeInterval)
+              volumeInterval = null
+            }
           }, 100)
         })
         .catch((e) => {
           console.error("[AudioPlayer] Auto-play failed:", e)
-          // setError("Auto-play blocked. Click play to listen.")
           // Reset volume if autoplay fails
           element.volume = 1
         })
@@ -305,7 +250,6 @@ export function AudioPlayer({ audioURL, audioRef }: AudioPlayerProps) {
     // Return a cleanup function that can be called externally if needed
     return () => {
       if (volumeInterval) clearInterval(volumeInterval)
-      if (delayTimeout) clearTimeout(delayTimeout)
     }
   }
 
