@@ -6,6 +6,7 @@ export interface ChatMessage {
   text: string
   sender: "user" | "ai"
   timestamp: Date
+  audioUrl?: string // Optional URL for audio playback
 }
 
 interface ChatState {

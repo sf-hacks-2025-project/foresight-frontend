@@ -120,6 +120,22 @@ export function ChatInterface() {
 
         // Create URL for audio playback
         const speechUrl = URL.createObjectURL(speechBlob)
+        
+        // Update the AI message to include the audio URL
+        const updatedAiMessage = {
+          ...aiMessage,
+          audioUrl: speechUrl
+        }
+        
+        // Replace the previous AI message with the updated one that includes the audio URL
+        const updatedMessages = messages.map(msg => 
+          msg.id === aiMessage.id ? updatedAiMessage : msg
+        )
+        
+        // Update the messages in the store
+        // This is a workaround since we can't directly modify the message after adding it
+        clearMessages()
+        updatedMessages.forEach(msg => addMessage(msg))
 
         // Reset audio URL first to ensure clean playback
         setAudioURL("")
@@ -286,6 +302,25 @@ export function ChatInterface() {
                         }`}
                       >
                         <p className="text-sm">{message.text}</p>
+                        {message.audioUrl && message.sender === "ai" && (
+                          <div className="flex items-center mt-2 text-xs text-[#E15B73]">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-3 w-3 mr-1"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                              <line x1="12" x2="12" y1="19" y2="22"></line>
+                            </svg>
+                            [Audio Message]
+                          </div>
+                        )}
                         <p className="text-xs text-slate-400 mt-1 text-right">
                           {new Date(message.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                         </p>
