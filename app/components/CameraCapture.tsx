@@ -20,12 +20,14 @@ export default function CameraCapture({ isVideoStopped = false }: CameraCaptureP
   const webcamRef = useRef<Webcam>(null)
   const videoElementRef = useRef<HTMLVideoElement | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const greetingAudioRef = useRef<HTMLAudioElement | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
   const pressTimerRef = useRef<NodeJS.Timeout | null>(null)
   const imageUploadIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const touchStartPosRef = useRef<{ x: number; y: number } | null>(null)
   const isScrollingRef = useRef<boolean>(false)
   const visualFeedbackTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const greetingPlayedRef = useRef<boolean>(false)
 
   // Local state for user ID
   const [userId, setUserId] = useState<string | null>(null)
@@ -301,6 +303,66 @@ export default function CameraCapture({ isVideoStopped = false }: CameraCaptureP
       }
     }
   }, [cameraReady, userId, setError, setStatusMessage, isVideoStopped])
+
+  // Play greeting audio when app starts
+  useEffect(() => {
+    if (cameraReady) {
+      // Function to play greeting audio
+      const playGreeting = () => {
+        if (greetingPlayedRef.current) return; // Only play once
+        
+        logger("Attempting to play greeting audio")
+        
+        // Create audio element if it doesn't exist
+        if (!greetingAudioRef.current) {
+          greetingAudioRef.current = new Audio("/greeting.mp3")
+          greetingAudioRef.current.volume = 0.8
+        }
+        
+        // Play the greeting
+        const playPromise = greetingAudioRef.current.play()
+        
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              logger("Greeting audio started playing")
+              greetingPlayedRef.current = true
+            })
+            .catch(err => {
+              logger(`Error playing greeting: ${err.message}`)
+              // We'll try again when user interacts
+            })
+        }
+      }
+      
+      // Try to play greeting immediately
+      playGreeting()
+      
+      // Also set up a listener to try playing when user interacts
+      // (in case autoplay is blocked by browser)
+      const handleUserInteraction = () => {
+        if (!greetingPlayedRef.current) {
+          playGreeting()
+        }
+        // Remove listeners after successful play
+        if (greetingPlayedRef.current) {
+          document.removeEventListener('click', handleUserInteraction)
+          document.removeEventListener('touchstart', handleUserInteraction)
+          document.removeEventListener('keydown', handleUserInteraction)
+        }
+      }
+      
+      document.addEventListener('click', handleUserInteraction)
+      document.addEventListener('touchstart', handleUserInteraction)
+      document.addEventListener('keydown', handleUserInteraction)
+      
+      return () => {
+        document.removeEventListener('click', handleUserInteraction)
+        document.removeEventListener('touchstart', handleUserInteraction)
+        document.removeEventListener('keydown', handleUserInteraction)
+      }
+    }
+  }, [cameraReady])
 
   // Set up audio recording with MediaRecorder
   useEffect(() => {
