@@ -88,6 +88,7 @@ export function ChatInterface() {
         // Convert to Blob for audio playback
         let speechBlob: Blob
 
+
         if (speechResult instanceof Blob) {
           speechBlob = speechResult
         } else {
