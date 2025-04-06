@@ -15,12 +15,38 @@ export function AudioPlayer({ audioURL, audioRef }: AudioPlayerProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
   const localAudioRef = useRef<HTMLAudioElement>(null);
   const hasAutoPlayedRef = useRef(false);
   
   // Use the provided audioRef or our local one
   const audioElement = audioRef?.current || localAudioRef.current;
   
+  // Detect if user is on mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      const userAgent = navigator.userAgent.toLowerCase();
+      return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+    };
+    
+    setIsMobile(checkMobile());
+    
+    // Add a touch event listener to the document to help with autoplay
+    const enableAutoplay = () => {
+      // This creates a user gesture that might help with autoplay
+      document.removeEventListener('touchstart', enableAutoplay);
+      document.removeEventListener('click', enableAutoplay);
+    };
+    
+    document.addEventListener('touchstart', enableAutoplay, { once: true });
+    document.addEventListener('click', enableAutoplay, { once: true });
+    
+    return () => {
+      document.removeEventListener('touchstart', enableAutoplay);
+      document.removeEventListener('click', enableAutoplay);
+    };
+  }, []);
+
   useEffect(() => {
     if (!audioURL) {
       setIsLoading(false);
@@ -33,7 +59,7 @@ export function AudioPlayer({ audioURL, audioRef }: AudioPlayerProps) {
     hasAutoPlayedRef.current = false; // Reset for new audio
   
     setIsLoading(true);
-    console.log("[AudioPlayer] New audio URL:", audioURL);
+    console.log("[AudioPlayer] New audio URL:", audioURL, isMobile ? "(mobile device)" : "(desktop)");
   
     const setupAudio = () => {
       // Reset state
@@ -45,13 +71,37 @@ export function AudioPlayer({ audioURL, audioRef }: AudioPlayerProps) {
         setIsLoading(false);
         setDuration(element.duration);
   
-        if (hasUserInteracted && !hasAutoPlayedRef.current) {
+        // Always attempt autoplay regardless of device type
+        if (!hasAutoPlayedRef.current) {
           hasAutoPlayedRef.current = true; // Prevent further auto-play attempts
-          console.log("[AudioPlayer] Attempting to play audio automatically");
-          element.play().catch((e) => {
-            console.error("[AudioPlayer] Auto-play failed:", e);
-            setError("Auto-play blocked. Click play to listen.");
-          });
+          console.log("[AudioPlayer] Attempting to play audio automatically on all devices");
+          
+          // Set volume to 0 first (sometimes helps with autoplay)
+          element.volume = 0;
+          
+          // Use a user activation event to trigger playback
+          const playPromise = element.play();
+          
+          if (playPromise !== undefined) {
+            playPromise.then(() => {
+              console.log("[AudioPlayer] Autoplay successful, gradually increasing volume");
+              // If successful, gradually increase volume
+              let vol = 0;
+              const volumeInterval = setInterval(() => {
+                if (vol < 1) {
+                  vol += 0.1;
+                  element.volume = Math.min(vol, 1);
+                } else {
+                  clearInterval(volumeInterval);
+                }
+              }, 100);
+            }).catch((e) => {
+              console.error("[AudioPlayer] Auto-play failed:", e);
+              setError("Auto-play blocked. Click play to listen.");
+              // Reset volume if autoplay fails
+              element.volume = 1;
+            });
+          }
         }
       };
   
@@ -81,9 +131,28 @@ export function AudioPlayer({ audioURL, audioRef }: AudioPlayerProps) {
       element.addEventListener("playing", onPlaying);
       element.addEventListener("pause", onPause);
   
+      // Set attributes that might help with autoplay
       element.src = audioURL;
       element.loop = false;
+      element.muted = true; // Start muted (helps with autoplay)
+      element.setAttribute('playsinline', ''); // Important for iOS
+      element.setAttribute('webkit-playsinline', ''); // For older iOS
+      element.setAttribute('autoplay', ''); // Try native autoplay attribute
       element.load();
+      
+      // Unmute after a short delay (after autoplay hopefully succeeds)
+      setTimeout(() => {
+        if (element.paused) {
+          // If still paused, try playing again
+          element.play().catch(() => {
+            // Silent catch - we'll handle errors elsewhere
+            element.muted = false;
+          });
+        } else {
+          // If playing, unmute
+          element.muted = false;
+        }
+      }, 1000);
   
       return () => {
         element.removeEventListener("canplay", onCanPlay);
@@ -98,7 +167,7 @@ export function AudioPlayer({ audioURL, audioRef }: AudioPlayerProps) {
   
     const cleanup = setupAudio();
     return cleanup;
-  }, [audioURL, hasUserInteracted]);
+  }, [audioURL, hasUserInteracted, isMobile]);
   
   
   const togglePlayback = () => {
@@ -107,14 +176,23 @@ export function AudioPlayer({ audioURL, audioRef }: AudioPlayerProps) {
     if (isPlaying) {
       audioElement.pause();
     } else {
-      audioElement.play()
-        .then(() => {
-          console.log("[AudioPlayer] Play successful");
-        })
-        .catch(e => {
-          console.error("[AudioPlayer] Play failed:", e);
-          setError(`Playback error: ${e}`);
-        });
+      // Clear any previous errors
+      setError(null);
+      
+      // On mobile, we need to ensure the play happens in response to a user gesture
+      const playPromise = audioElement.play();
+      
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            console.log("[AudioPlayer] Play successful");
+            hasAutoPlayedRef.current = true; // Mark as played successfully
+          })
+          .catch(e => {
+            console.error("[AudioPlayer] Play failed:", e);
+            setError(`Playback error: ${e.message || e}`);
+          });
+      }
     }
   };
   
@@ -146,6 +224,16 @@ export function AudioPlayer({ audioURL, audioRef }: AudioPlayerProps) {
       
       {/* Custom player UI */}
       <div className="bg-gray-100 p-3 rounded-lg w-full overflow-hidden">
+        {!isPlaying && audioURL && !isLoading && (
+          <div className="mb-2 text-center">
+            <button 
+              onClick={togglePlayback}
+              className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-full text-sm"
+            >
+              Play Audio
+            </button>
+          </div>
+        )}
         <div className="flex items-center mb-2 w-full">
           <button 
             onClick={togglePlayback}
