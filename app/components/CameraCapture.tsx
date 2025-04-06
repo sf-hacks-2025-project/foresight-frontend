@@ -288,7 +288,7 @@ export default function CameraCapture({ isVideoStopped = false }: CameraCaptureP
           setStatusMessage("Camera feed disrupted. Reconnecting...")
           logger("Failed to capture image from webcam")
         }
-      }, 5555)
+      }, 11111)
 
       return () => {
         if (imageUploadIntervalRef.current) {
