@@ -8,10 +8,9 @@ import { uploadImage, sendAudioPrompt } from "../utils/api"
 
 interface CameraCaptureProps {
   onImageCapture?: (imageBlob: Blob) => void
-  isVideoStopped?: boolean
 }
 
-export function CameraCapture({ onImageCapture, isVideoStopped }: CameraCaptureProps) {
+export function CameraCapture({ onImageCapture }: CameraCaptureProps) {
   // State for camera access and recording
   const [hasAccess, setHasAccess] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
@@ -387,31 +386,6 @@ export function CameraCapture({ onImageCapture, isVideoStopped }: CameraCaptureP
     }
   }, [requestCameraAccess])
 
-  // Effect to handle video stopping
-  useEffect(() => {
-    if (isVideoStopped && streamRef.current) {
-      // Pause the video element
-      if (videoRef.current) {
-        videoRef.current.pause()
-      }
-      
-      // Optionally stop the tracks
-      streamRef.current.getTracks().forEach(track => {
-        track.enabled = false
-      })
-    } else if (!isVideoStopped && streamRef.current) {
-      // Resume the video
-      if (videoRef.current) {
-        videoRef.current.play().catch(err => console.error("Error playing video:", err))
-      }
-      
-      // Re-enable tracks
-      streamRef.current.getTracks().forEach(track => {
-        track.enabled = true
-      })
-    }
-  }, [isVideoStopped])
-
   // Render the component
   return (
     <div className="relative w-full h-full flex flex-col">
@@ -480,3 +454,4 @@ export function CameraCapture({ onImageCapture, isVideoStopped }: CameraCaptureP
 }
 
 export default CameraCapture
+
