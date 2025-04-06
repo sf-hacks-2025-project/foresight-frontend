@@ -206,7 +206,23 @@ async function generateSpeech(text: string): Promise<Buffer> {
     })
 
     logger.log("Speech data received")
-    return Buffer.from(response.data)
+    
+    // Add 1 second of padding (silence) at the beginning
+    // Assuming 16-bit PCM audio at 24000Hz sample rate (common for TTS)
+    const audioData = Buffer.from(response.data)
+    const sampleRate = 24000 // Standard sample rate for many TTS systems
+    const bytesPerSample = 2 // 16-bit audio = 2 bytes per sample
+    const channels = 1 // Mono audio
+    
+    // Calculate size of 1 second of silence
+    const silenceSize = sampleRate * bytesPerSample * channels
+    const silenceBuffer = Buffer.alloc(silenceSize, 0) // Create buffer filled with zeros (silence)
+    
+    // Combine silence buffer with audio data
+    const paddedAudio = Buffer.concat([silenceBuffer, audioData])
+    
+    logger.log("Added 1 second padding for smooth volume transition")
+    return paddedAudio
   } catch (error) {
     logger.error("Error generating speech:", error)
     handleApiError(error as ApiError)
