@@ -1,22 +1,28 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import CameraCapture from "./components/CameraCapture"
-import { useAppStore } from "./store/useAppStore"
-import { motion } from "framer-motion"
-import Image from "next/image"
-import { ControlPanel } from "./components/ui/ControlPanel"
-import { ChatInterface } from "./components/ui/ChatInterface"
+import { useState } from "react";
+import CameraCapture from "./components/CameraCapture";
+import { useAppStore } from "./store/useAppStore";
+import { motion } from "framer-motion";
+import Image from "next/image";
+import { ControlPanel } from "./components/ui/ControlPanel";
+import { ChatInterface } from "./components/ui/ChatInterface";
 
 export default function Home() {
-  const { handlePressStart, handlePressEnd, isRecording, isPressing, cameraReady } = useAppStore()
-  const [isControlPanelOpen, setIsControlPanelOpen] = useState(false)
-  const [isVideoStopped, setIsVideoStopped] = useState(false)
+  const {
+    handlePressStart,
+    handlePressEnd,
+    isRecording,
+    isPressing,
+    cameraReady,
+  } = useAppStore();
+  const [isControlPanelOpen, setIsControlPanelOpen] = useState(false);
+  const [isVideoStopped, setIsVideoStopped] = useState(false);
 
   const handleStopVideo = () => {
-    setIsVideoStopped(true)
-    setIsControlPanelOpen(false)
-  }
+    setIsVideoStopped(true);
+    setIsControlPanelOpen(false);
+  };
 
   return (
     <div
@@ -101,7 +107,9 @@ export default function Home() {
 
       <footer className="w-full py-4 px-6 flex flex-col items-center justify-center shrink-0 text-xs text-white/50 space-y-1">
         <span>Foresight</span>
-        <span className="text-white/30">Created by Anson, Andrey, and Dima • SFHacks 2025</span>
+        <span className="text-white/30">
+          Created by Anson, Andrey, and Dima • SFHacks 2025
+        </span>
       </footer>
 
       {/* Recording indicator - edge glow effect similar to Siri */}
@@ -166,6 +174,5 @@ export default function Home() {
         onStopVideo={handleStopVideo}
       />
     </div>
-  )
+  );
 }
-
