@@ -8,16 +8,25 @@ let userId = ""
 
 // Simple logger object
 const logger = {
-  log: (...args: any[]) => {
+  log: (...args: unknown[]) => {
     console.log("[images.ts]", ...args)
   },
-  error: (...args: any[]) => {
+  error: (...args: unknown[]) => {
     console.error("[images.ts]", ...args)
   },
 }
 
+// Define a type for API errors
+type ApiError = Error & { 
+  response?: { 
+    data: unknown; 
+    status: number 
+  }; 
+  request?: unknown 
+}
+
 // Helper function to handle API errors
-const handleApiError = (error: any) => {
+const handleApiError = (error: ApiError) => {
   if (error.response) {
     // The request was made and the server responded with a status code outside the range of 2xx
     logger.error("API Error Response:", error.response.data)
@@ -32,20 +41,20 @@ const handleApiError = (error: any) => {
 }
 
 // 1. User API - Create a new user
-async function createUser() {
+async function createUser(): Promise<string> {
   try {
     const response = await axios.get(`${API_BASE_URL}/user/create`)
     userId = response.data.user_id
     logger.log("User created with ID:", userId)
     return userId
   } catch (error) {
-    handleApiError(error)
+    handleApiError(error as ApiError)
     throw error
   }
 }
 
 // 2. Vision API - Upload an image and get visual context
-async function uploadImage(userId: string, imageBlob: Blob) {
+async function uploadImage(userId: string, imageBlob: Blob): Promise<unknown> {
   try {
     logger.log("Starting image upload to:", `${API_BASE_URL}/vision/upload`)
 
@@ -75,13 +84,13 @@ async function uploadImage(userId: string, imageBlob: Blob) {
     logger.log("Image upload successful:", response.data)
     return response.data
   } catch (error) {
-    handleApiError(error)
+    handleApiError(error as ApiError)
     throw error
   }
 }
 
 // 3. Vision API - Clear visual history
-async function clearVisionHistory() {
+async function clearVisionHistory(): Promise<unknown> {
   try {
     const payload = {
       user_id: userId,
@@ -101,13 +110,13 @@ async function clearVisionHistory() {
     return response.data
   } catch (error) {
     logger.error("Error clearing vision history:", error)
-    handleApiError(error)
+    handleApiError(error as ApiError)
     throw error
   }
 }
 
 // 4. Conversation API - Send text prompt
-async function sendTextPrompt(textQuery: string) {
+async function sendTextPrompt(textQuery: string): Promise<unknown> {
   try {
     const apiUrl = `${API_BASE_URL}/conversation/text`
     logger.log("Sending text prompt to:", apiUrl)
@@ -121,13 +130,13 @@ async function sendTextPrompt(textQuery: string) {
     return response.data
   } catch (error) {
     logger.error("Error sending text prompt:", error)
-    handleApiError(error)
+    handleApiError(error as ApiError)
     throw error
   }
 }
 
 // 5. Conversation API - Send audio prompt
-async function sendAudioPrompt(audioBuffer: Buffer) {
+async function sendAudioPrompt(audioBuffer: Buffer): Promise<unknown> {
   try {
     // Convert buffer to base64 for JSON transmission
     const base64Audio = audioBuffer.toString("base64")
@@ -150,13 +159,13 @@ async function sendAudioPrompt(audioBuffer: Buffer) {
     return response.data
   } catch (error) {
     logger.error("Error sending audio prompt:", error)
-    handleApiError(error)
+    handleApiError(error as ApiError)
     throw error
   }
 }
 
 // 6. Conversation API - Clear conversation history
-async function clearConversationHistory() {
+async function clearConversationHistory(): Promise<unknown> {
   try {
     const payload = {
       user_id: userId,
@@ -176,7 +185,7 @@ async function clearConversationHistory() {
     return response.data
   } catch (error) {
     logger.error("Error clearing conversation history:", error)
-    handleApiError(error)
+    handleApiError(error as ApiError)
     throw error
   }
 }
@@ -200,7 +209,7 @@ async function generateSpeech(text: string): Promise<Buffer> {
     return Buffer.from(response.data)
   } catch (error) {
     logger.error("Error generating speech:", error)
-    handleApiError(error)
+    handleApiError(error as ApiError)
     throw error
   }
 }
@@ -215,4 +224,3 @@ export {
   clearConversationHistory,
   generateSpeech,
 }
-

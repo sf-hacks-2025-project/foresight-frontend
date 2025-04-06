@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
 
 interface RecordButtonProps {
   isRecording: boolean
@@ -10,12 +10,10 @@ interface RecordButtonProps {
 }
 
 export function RecordButton({ isRecording, onRecordStart, onRecordStop, disabled = false }: RecordButtonProps) {
-  const [isIOS, setIsIOS] = useState(false)
-
   useEffect(() => {
-    // Detect iOS device
-    const userAgent = window.navigator.userAgent.toLowerCase()
-    setIsIOS(/iphone|ipad|ipod/.test(userAgent))
+    // Detect iOS device - we don't need to store this since it's not used
+    // const userAgent = window.navigator.userAgent.toLowerCase()
+    // setIsIOS(/iphone|ipad|ipod/.test(userAgent))
   }, [])
 
   const handleClick = () => {
@@ -54,4 +52,3 @@ export function RecordButton({ isRecording, onRecordStart, onRecordStop, disable
     </div>
   )
 }
-

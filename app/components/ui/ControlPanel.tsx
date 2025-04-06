@@ -26,7 +26,7 @@ export function ControlPanel({ isOpen, onClose, onStopVideo }: ControlPanelProps
       await clearVisionHistory(userId)
       setFeedbackMessage("Visual memory reset successfully")
       setTimeout(() => setFeedbackMessage(null), 3000)
-    } catch (error) {
+    } catch {
       setFeedbackMessage("Failed to reset visual memory")
       setTimeout(() => setFeedbackMessage(null), 3000)
     } finally {
@@ -44,7 +44,7 @@ export function ControlPanel({ isOpen, onClose, onStopVideo }: ControlPanelProps
       clearMessages()
       setFeedbackMessage("Conversation memory reset successfully")
       setTimeout(() => setFeedbackMessage(null), 3000)
-    } catch (error) {
+    } catch {
       setFeedbackMessage("Failed to reset conversation memory")
       setTimeout(() => setFeedbackMessage(null), 3000)
     } finally {
@@ -272,4 +272,3 @@ export function ControlPanel({ isOpen, onClose, onStopVideo }: ControlPanelProps
     </AnimatePresence>
   )
 }
-

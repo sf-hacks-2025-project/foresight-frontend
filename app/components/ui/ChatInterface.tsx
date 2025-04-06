@@ -62,10 +62,17 @@ export function ChatInterface() {
       // Send the message to the API
       const response = await sendTextPrompt(userId, inputValue.trim())
       console.log("[ChatInterface] Text prompt response:", response)
+      
+      // Extract text from response
+      const responseText = typeof response === 'string' ? response : 
+                          (response && typeof response === 'object' && 'text' in response) ? 
+                          (response as { text: string }).text : 
+                          "I didn't understand that. Could you try again?"
+      
       // Create AI response message
       const aiMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        text: response || "I didn't understand that. Could you try again?",
+        text: responseText,
         sender: "ai",
         timestamp: new Date(),
       }
@@ -76,7 +83,7 @@ export function ChatInterface() {
       // Generate speech from the AI response
       try {
         setStatusMessage("Generating speech from response...")
-        const speechResult = await generateSpeech(userId, response)
+        const speechResult = await generateSpeech(userId, responseText)
 
         // Convert to Blob for audio playback
         let speechBlob: Blob
@@ -121,13 +128,15 @@ export function ChatInterface() {
           setAudioURL(speechUrl)
           setStatusMessage("Audio ready to play")
         }, 100)
-      } catch (speechError: any) {
+      } catch (speechError: unknown) {
         console.error("Speech generation error:", speechError)
-        setError(`Speech generation failed: ${speechError.message || "Unknown error"}`)
+        const speechErrorMsg = speechError instanceof Error ? speechError.message : "Unknown error"
+        setError(`Speech generation failed: ${speechErrorMsg}`)
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error sending message:", error)
-      setError(`Failed to send message: ${error.message || "Unknown error"}`)
+      const errorMsg = error instanceof Error ? error.message : "Unknown error"
+      setError(`Failed to send message: ${errorMsg}`)
 
       // Add error message to chat
       const errorMessage: ChatMessage = {
@@ -352,4 +361,3 @@ export function ChatInterface() {
     </>
   )
 }
-

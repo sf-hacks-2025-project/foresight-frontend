@@ -4,11 +4,10 @@ import type { RefObject } from "react"
 
 interface VideoDisplayProps {
   videoRef: RefObject<HTMLVideoElement | null>
-  hasPermission: boolean
   onMetadataLoaded: () => void
 }
 
-export function VideoDisplay({ videoRef, hasPermission, onMetadataLoaded }: VideoDisplayProps) {
+export function VideoDisplay({ videoRef, onMetadataLoaded }: VideoDisplayProps) {
   return (
     <div className="relative w-full aspect-video bg-gray-100 rounded-lg">
       <video
@@ -29,4 +28,3 @@ export function VideoDisplay({ videoRef, hasPermission, onMetadataLoaded }: Vide
     </div>
   )
 }
-

@@ -236,11 +236,11 @@ export function AudioPlayer({ audioURL, audioRef }: AudioPlayerProps) {
         clearInterval(volumeInterval)
       }
     }
-  }, [hasUserInteracted, audioURL, isPlaying])
+  }, [hasUserInteracted, audioURL, isPlaying, audioRef, isMobile])
 
   useEffect(() => {
     hasTriedAutoplayAfterInteractionRef.current = false
-  }, [audioURL])
+  }, [audioURL, audioRef])
 
   const attemptAutoplay = (element: HTMLAudioElement) => {
     hasAutoPlayedRef.current = true // Mark that we've attempted autoplay
@@ -531,4 +531,3 @@ export function AudioPlayer({ audioURL, audioRef }: AudioPlayerProps) {
     </div>
   )
 }
-

@@ -6,7 +6,6 @@ interface StatusDisplayProps {
   message: string
   error: string | null
   isRecording?: boolean
-  isPressing?: boolean
   lastImageTime?: string | null
   isVideoStopped?: boolean
 }
@@ -15,7 +14,6 @@ export function StatusDisplay({
   message,
   error,
   isRecording,
-  isPressing,
   lastImageTime,
   isVideoStopped,
 }: StatusDisplayProps) {
@@ -161,4 +159,3 @@ export function StatusDisplay({
     </div>
   )
 }
-

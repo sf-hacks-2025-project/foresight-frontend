@@ -105,7 +105,7 @@ export const useAppStore = create<AppState>()(
                   statusMessage: "Recording audio...",
                   audioURL: "", // Clear any previous audio URL when recording starts
                 })
-              } catch (err) {
+              } catch {
                 set({
                   error: "Failed to start recording",
                   statusMessage: "Recording error",
@@ -115,7 +115,8 @@ export const useAppStore = create<AppState>()(
           }, 500) // 500ms press to start recording
 
           // Store the timer ID in a variable that can be accessed by handlePressEnd
-          ;(window as any).__pressTimerId = pressTimer
+          const windowObj = window as unknown as { __pressTimerId: NodeJS.Timeout | null }
+          windowObj.__pressTimerId = pressTimer
         }
       },
 
@@ -124,9 +125,10 @@ export const useAppStore = create<AppState>()(
         set({ isPressing: false })
 
         // Clear the press timer if it exists
-        if ((window as any).__pressTimerId) {
-          clearTimeout((window as any).__pressTimerId)
-          ;(window as any).__pressTimerId = null
+        const windowObj = window as unknown as { __pressTimerId: NodeJS.Timeout | null }
+        if (windowObj.__pressTimerId) {
+          clearTimeout(windowObj.__pressTimerId)
+          windowObj.__pressTimerId = null
         }
 
         // If recording, stop it
@@ -137,7 +139,7 @@ export const useAppStore = create<AppState>()(
               statusMessage: "Processing audio...",
             })
             // Note: isRecording will be set to false when the ondataavailable event fires
-          } catch (err) {
+          } catch {
             set({
               isRecording: false,
               error: "Failed to stop recording",
@@ -159,4 +161,3 @@ export const useAppStore = create<AppState>()(
     },
   ),
 )
-

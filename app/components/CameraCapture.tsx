@@ -41,7 +41,6 @@ export default function CameraCapture({ isVideoStopped = false }: CameraCaptureP
     isIOSDevice,
     isPressing,
     mediaRecorder,
-    hasUserInteracted,
     userId: storeUserId,
     setError,
     setStatusMessage,
@@ -49,9 +48,7 @@ export default function CameraCapture({ isVideoStopped = false }: CameraCaptureP
     setAudioURL,
     setCameraReady,
     setIsIOSDevice,
-    setIsPressing,
     setMediaRecorder,
-    setHasUserInteracted,
     setUserId: setStoreUserId,
     handlePressStart,
     handlePressEnd,
@@ -64,7 +61,7 @@ export default function CameraCapture({ isVideoStopped = false }: CameraCaptureP
 
   // Helper to detect iOS devices
   const detectIOS = useCallback(() => {
-    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !('MSStream' in window)
   }, [])
 
   // Function to set up video element attributes (crucial for iOS)
@@ -104,7 +101,7 @@ export default function CameraCapture({ isVideoStopped = false }: CameraCaptureP
 
   // Handle successful webcam initialization
   const handleUserMedia = useCallback(
-    (stream: MediaStream) => {
+    () => {
       setupVideoElement()
       setCameraReady(true)
       setError("")
@@ -174,7 +171,7 @@ export default function CameraCapture({ isVideoStopped = false }: CameraCaptureP
           }, 500)
         }
       })
-      .catch((err) => {
+      .catch((err: Error) => {
         setError(`Camera access failed: ${err.message}`)
         setStatusMessage("Could not access visual feed")
         logger(`Camera access failed: ${err.message}`)
@@ -182,8 +179,8 @@ export default function CameraCapture({ isVideoStopped = false }: CameraCaptureP
 
     return () => {
       if (videoElementRef.current && videoElementRef.current.srcObject) {
-        const stream = videoElementRef.current.srcObject as MediaStream
-        stream.getTracks().forEach((track) => track.stop())
+        const mediaStream = videoElementRef.current.srcObject as MediaStream
+        mediaStream.getTracks().forEach((track) => track.stop())
         logger("Cleaned up camera stream")
       }
     }
@@ -238,7 +235,7 @@ export default function CameraCapture({ isVideoStopped = false }: CameraCaptureP
     if (webcamRef.current) {
       setupVideoElement()
     }
-  }, [webcamRef.current, setupVideoElement])
+  }, [setupVideoElement])
 
   // Set up interval for sending images when camera is ready and user exists
   useEffect(() => {
@@ -271,18 +268,20 @@ export default function CameraCapture({ isVideoStopped = false }: CameraCaptureP
             setLastImageTime(new Date())
 
             try {
-              const result = await uploadImage(userId, imageBlob)
+              await uploadImage(userId, imageBlob)
               logger("Image uploaded successfully")
               setStatusMessage("Visual analysis complete")
-            } catch (err: any) {
-              setError(`Upload error: ${err.message || "Unknown error"}`)
+            } catch (err: unknown) {
+              const errorMessage = err instanceof Error ? err.message : "Unknown error"
+              setError(`Upload error: ${errorMessage}`)
               setStatusMessage("Analysis interrupted. Resuming...")
-              logger(`Upload error: ${err.message || "Unknown error"}`)
+              logger(`Upload error: ${errorMessage}`)
             }
-          } catch (err: any) {
-            setError(`Image preparation error: ${err.message || "Unknown error"}`)
+          } catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : "Unknown error"
+            setError(`Image preparation error: ${errorMessage}`)
             setStatusMessage("Visual processing error. Reestablishing connection...")
-            logger(`Image preparation error: ${err.message || "Unknown error"}`)
+            logger(`Image preparation error: ${errorMessage}`)
           }
         } else {
           setStatusMessage("Camera feed disrupted. Reconnecting...")
@@ -366,7 +365,7 @@ export default function CameraCapture({ isVideoStopped = false }: CameraCaptureP
                   try {
                     setStatusMessage("Processing your question...")
                     logger("Sending audio to server")
-                  } catch (error) {
+                  } catch (_error) {
                     setError("Failed to send audio. Please refresh.")
                     setStatusMessage("Audio upload failed")
                     logger("Failed to send audio")
@@ -380,7 +379,13 @@ export default function CameraCapture({ isVideoStopped = false }: CameraCaptureP
 
                       try {
                         setStatusMessage("Generating response...")
-                        const speechResult = await generateSpeech(userId, response)
+                        // Cast the response to string since generateSpeech expects a string
+                        const responseText = typeof response === 'string' ? response : 
+                                            (response && typeof response === 'object' && 'text' in response) ? 
+                                            (response as { text: string }).text : 
+                                            JSON.stringify(response)
+                        
+                        const speechResult = await generateSpeech(userId, responseText)
 
                         // Always convert to Blob for consistent handling
                         let speechBlob: Blob
@@ -450,15 +455,17 @@ export default function CameraCapture({ isVideoStopped = false }: CameraCaptureP
                           // Let the AudioPlayer handle playback instead of doing it here
                           // This avoids the double-playback issue
                         }, 100)
-                      } catch (speechError: any) {
-                        setError(`Speech generation failed: ${speechError.message || "Unknown error"}`)
+                      } catch (speechError: unknown) {
+                        const errorMessage = speechError instanceof Error ? speechError.message : "Unknown error"
+                        setError(`Speech generation failed: ${errorMessage}`)
                         setStatusMessage("Could not generate speech from response")
-                        logger(`Speech generation failed: ${speechError.message || "Unknown error"}`)
+                        logger(`Speech generation failed: ${errorMessage}`)
                       }
-                    } catch (error: any) {
-                      setError(`Failed to send audio: ${error.message || "Unknown error"}`)
+                    } catch (error: unknown) {
+                      const errorMessage = error instanceof Error ? error.message : "Unknown error"
+                      setError(`Failed to send audio: ${errorMessage}`)
                       setStatusMessage("Audio upload failed")
-                      logger(`Failed to send audio: ${error.message || "Unknown error"}`)
+                      logger(`Failed to send audio: ${errorMessage}`)
                     }
                   } else {
                     throw new Error("User ID not available")
@@ -554,8 +561,6 @@ export default function CameraCapture({ isVideoStopped = false }: CameraCaptureP
         logger("Recording stopped")
       } catch (error) {
         setError(`Failed to stop recording: ${error}`)
-        logger(`Recording stop error  {
-        setError(\`Failed to stop recording: ${error}`)
         logger(`Recording stop error: ${error}`)
       }
     }
@@ -758,7 +763,6 @@ export default function CameraCapture({ isVideoStopped = false }: CameraCaptureP
         error={error}
         message={isVideoStopped ? "Video paused, audio active" : statusMessage}
         isRecording={isRecording}
-        isPressing={isPressing}
         lastImageTime={lastImageTime ? getTimeSinceLastImage() : null}
         isVideoStopped={isVideoStopped}
       />
@@ -780,4 +784,3 @@ export default function CameraCapture({ isVideoStopped = false }: CameraCaptureP
     </div>
   )
 }
-

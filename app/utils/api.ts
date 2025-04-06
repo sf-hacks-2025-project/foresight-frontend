@@ -9,10 +9,10 @@ const USER_ID_STORAGE_KEY = "sfhacks_user_id"
 
 // Simple logger object
 const logger = {
-  log: (...args: any[]) => {
+  log: (...args: unknown[]) => {
     console.log("[api.ts]", ...args)
   },
-  error: (...args: any[]) => {
+  error: (...args: unknown[]) => {
     console.error("[api.ts]", ...args)
   },
 }
@@ -42,8 +42,17 @@ export function getUserId(): string | null {
   return null
 }
 
+// Define a type for API errors
+type ApiError = Error & { 
+  response?: { 
+    data: unknown; 
+    status: number 
+  }; 
+  request?: unknown 
+}
+
 // Helper function to handle API errors
-const handleApiError = (error: any) => {
+const handleApiError = (error: ApiError) => {
   if (error.response) {
     // The request was made and the server responded with a status code outside the range of 2xx
     logger.error("API Error Response:", error.response.data)
@@ -58,7 +67,7 @@ const handleApiError = (error: any) => {
 }
 
 // 1. User API - Create a new user
-export async function createUser() {
+export async function createUser(): Promise<string> {
   try {
     // First check if we already have a user ID in localStorage
     const existingUserId = getUserId()
@@ -77,13 +86,13 @@ export async function createUser() {
 
     return userId
   } catch (error) {
-    handleApiError(error)
+    handleApiError(error as ApiError)
     throw error
   }
 }
 
 // 2. Vision API - Upload an image
-export async function uploadImage(userId: string, imageBlob: Blob) {
+export async function uploadImage(userId: string, imageBlob: Blob): Promise<unknown> {
   try {
     logger.log("Starting image upload")
 
@@ -114,7 +123,7 @@ export async function uploadImage(userId: string, imageBlob: Blob) {
     logger.log("Image upload successful:", response.data)
     return response.data
   } catch (error) {
-    handleApiError(error)
+    handleApiError(error as ApiError)
     throw error
   }
 }
@@ -130,7 +139,7 @@ function blobToBase64(blob: Blob): Promise<string> {
 }
 
 // 3. Vision API - Clear visual history
-export async function clearVisionHistory(userId: string) {
+export async function clearVisionHistory(userId: string): Promise<unknown> {
   try {
     const apiUrl = `${API_BASE_URL}/vision/clear`
     logger.log("Clearing vision history at:", apiUrl)
@@ -143,7 +152,7 @@ export async function clearVisionHistory(userId: string) {
     return response.data
   } catch (error) {
     logger.error("Error clearing vision history:", error)
-    handleApiError(error)
+    handleApiError(error as ApiError)
     throw error
   }
 }
@@ -154,7 +163,7 @@ export function bufferToBlob(buffer: ArrayBuffer, mimeType = "audio/wav"): Blob 
 }
 
 // 4. Conversation API - Send text prompt
-export async function sendTextPrompt(userId: string, textQuery: string) {
+export async function sendTextPrompt(userId: string, textQuery: string): Promise<unknown> {
   try {
     const apiUrl = `${API_BASE_URL}/conversation/text`
     logger.log("Sending text prompt to:", apiUrl)
@@ -168,13 +177,13 @@ export async function sendTextPrompt(userId: string, textQuery: string) {
     return response.data
   } catch (error) {
     logger.error("Error sending text prompt:", error)
-    handleApiError(error)
+    handleApiError(error as ApiError)
     throw error
   }
 }
 
 // 5. Conversation API - Send audio prompt
-export async function sendAudioPrompt(userId: string, audioBlob: Blob) {
+export async function sendAudioPrompt(userId: string, audioBlob: Blob): Promise<unknown> {
   try {
     // Create a FormData object
     const formData = new FormData()
@@ -196,13 +205,13 @@ export async function sendAudioPrompt(userId: string, audioBlob: Blob) {
     return response.data
   } catch (error) {
     logger.error("Error sending audio prompt:", error)
-    handleApiError(error)
+    handleApiError(error as ApiError)
     throw error
   }
 }
 
 // 6. Conversation API - Clear conversation history
-export async function clearConversationHistory(userId: string) {
+export async function clearConversationHistory(userId: string): Promise<unknown> {
   try {
     const apiUrl = `${API_BASE_URL}/conversation/clear`
     logger.log("Clearing conversation history at:", apiUrl)
@@ -215,7 +224,7 @@ export async function clearConversationHistory(userId: string) {
     return response.data
   } catch (error) {
     logger.error("Error clearing conversation history:", error)
-    handleApiError(error)
+    handleApiError(error as ApiError)
     throw error
   }
 }
@@ -272,7 +281,7 @@ export async function generateSpeech(userId: string, text: string): Promise<Read
     }
   } catch (error) {
     logger.error("Error generating speech:", error)
-    handleApiError(error)
+    handleApiError(error as ApiError)
 
     // If streaming fails, fall back to non-streaming approach
     try {
@@ -293,4 +302,3 @@ export async function generateSpeech(userId: string, text: string): Promise<Read
     }
   }
 }
-
