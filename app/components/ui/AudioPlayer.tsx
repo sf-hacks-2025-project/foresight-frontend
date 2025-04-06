@@ -114,7 +114,7 @@ export function AudioPlayer({ audioURL, audioRef }: AudioPlayerProps) {
       // Set attributes that might help with autoplay
       element.src = audioURL
       element.loop = false
-      element.muted = true // Start muted (helps with autoplay)
+      element.muted = false // Start muted (helps with autoplay)
       element.setAttribute("playsinline", "") // Important for iOS
       element.setAttribute("webkit-playsinline", "") // For older iOS
       element.load() // Load the audio but don't try to autoplay with attribute
@@ -122,7 +122,7 @@ export function AudioPlayer({ audioURL, audioRef }: AudioPlayerProps) {
       // Unmute after a short delay
       setTimeout(() => {
         element.muted = false
-      }, 1000)
+      }, 1)
 
       return () => {
         // First clear any existing volume interval
