@@ -1,8 +1,16 @@
 @import "tailwindcss";
 
 :root {
+  /* Original variables */
   --background: #ffffff;
   --foreground: #171717;
+  
+  /* Color scheme variables */
+  --color-bittersweet-orange: #FF7270;
+  --color-mandy-pink: #E15B73;
+  --color-soft-blue: #6A81FB;
+  --color-oil-black: #1D1D1D;
+  --color-fantasy-pink: #FFF4ED;
 }
 
 @theme inline {
@@ -23,4 +31,184 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  background-color: #1D1D1D;
+  user-select: none; /* Prevent text selection */
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE/Edge */
+}
+
+/* Apply no-select to all elements */
+* {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Button styling */
+button {
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+/* Recording indicator animation */
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+    box-shadow: 0 0 5px var(--color-mandy-pink);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 15px var(--color-mandy-pink);
+  }
+  100% {
+    opacity: 0.6;
+    box-shadow: 0 0 5px var(--color-mandy-pink);
+  }
+}
+
+.animate-pulse {
+  animation: pulse 1.5s infinite;
+}
+
+/* Border glow animation */
+@keyframes borderGlow {
+  0% {
+    box-shadow: 0 0 5px var(--color-mandy-pink);
+  }
+  50% {
+    box-shadow: 0 0 15px var(--color-mandy-pink), 0 0 20px var(--color-mandy-pink);
+  }
+  100% {
+    box-shadow: 0 0 5px var(--color-mandy-pink);
+  }
+}
+
+.animate-border-glow {
+  animation: borderGlow 2s infinite;
+}
+
+@keyframes flash {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.animate-flash {
+  animation: flash 300ms ease-out forwards;
+}
+
+/* Rainbow animation for borders */
+@keyframes rainbow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Enhanced border glow animation */
+@keyframes enhancedGlow {
+  0% {
+    box-shadow: 0 0 10px rgba(255, 114, 112, 0.9), 0 0 20px rgba(255, 114, 112, 0.6), 0 0 30px rgba(255, 114, 112, 0.3);
+    filter: brightness(1.1);
+  }
+  25% {
+    box-shadow: 0 0 15px rgba(225, 91, 115, 0.9), 0 0 30px rgba(225, 91, 115, 0.6), 0 0 45px rgba(225, 91, 115, 0.3);
+    filter: brightness(1.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(106, 129, 251, 0.9), 0 0 40px rgba(106, 129, 251, 0.6), 0 0 60px rgba(106, 129, 251, 0.3);
+    filter: brightness(1.3);
+  }
+  75% {
+    box-shadow: 0 0 15px rgba(255, 244, 237, 0.9), 0 0 30px rgba(255, 244, 237, 0.6), 0 0 45px rgba(255, 244, 237, 0.3);
+    filter: brightness(1.2);
+  }
+  100% {
+    box-shadow: 0 0 10px rgba(255, 114, 112, 0.9), 0 0 20px rgba(255, 114, 112, 0.6), 0 0 30px rgba(255, 114, 112, 0.3);
+    filter: brightness(1.1);
+  }
+}
+
+.rainbow-bg {
+  background: linear-gradient(
+    124deg,
+    #ff0000,
+    #ff7700,
+    #ffff00,
+    #00ff00,
+    #0000ff,
+    #8a2be2,
+    #ff00ff,
+    #ff0000
+  );
+  background-size: 400% 400%;
+  animation: rainbow 4s ease infinite;
+}
+
+.animate-enhanced-glow {
+  animation: enhancedGlow 4s infinite;
+}
+
+/* Perfect rounded border */
+.rainbow-border {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.rainbow-border::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  background: linear-gradient(
+    124deg,
+    #ff0000,
+    #ff7700,
+    #ffff00,
+    #00ff00,
+    #0000ff,
+    #8a2be2,
+    #ff00ff,
+    #ff0000
+  );
+  background-size: 400% 400%;
+  border-radius: 28px;
+  z-index: -1;
+  animation: rainbow 4s ease infinite;
+  filter: blur(4px) brightness(1.2) saturate(1.5);
+  box-shadow: 
+    0 0 10px rgba(255, 0, 0, 0.7),
+    0 0 20px rgba(255, 165, 0, 0.7),
+    0 0 30px rgba(255, 255, 0, 0.7),
+    0 0 40px rgba(0, 255, 0, 0.7),
+    0 0 50px rgba(0, 0, 255, 0.7),
+    0 0 60px rgba(138, 43, 226, 0.7);
+}
+
+/* Add a second layer for extra glow */
+.rainbow-border::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: transparent;
+  border-radius: 26px;
+  z-index: -2;
+  box-shadow: 
+    0 0 15px rgba(255, 0, 0, 0.8),
+    0 0 30px rgba(255, 165, 0, 0.8),
+    0 0 45px rgba(255, 255, 0, 0.8);
+  animation: enhancedGlow 4s infinite;
 }
