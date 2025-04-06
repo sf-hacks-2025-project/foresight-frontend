@@ -133,7 +133,7 @@ export function AudioPlayer({ audioURL, audioRef }: AudioPlayerProps) {
   };
   
   return (
-    <div className="mt-4">
+    <div className="mt-4 w-full overflow-hidden">
       <h3 className="text-lg font-medium mb-2">AI Response Audio:</h3>
       
       {/* Audio element - use ref from props or local ref */}
@@ -145,11 +145,11 @@ export function AudioPlayer({ audioURL, audioRef }: AudioPlayerProps) {
       />
       
       {/* Custom player UI */}
-      <div className="bg-gray-100 p-3 rounded-lg">
-        <div className="flex items-center mb-2">
+      <div className="bg-gray-100 p-3 rounded-lg w-full overflow-hidden">
+        <div className="flex items-center mb-2 w-full">
           <button 
             onClick={togglePlayback}
-            className={`${isPlaying ? 'bg-blue-600' : 'bg-blue-500 hover:bg-blue-600'} text-white rounded-full w-10 h-10 flex items-center justify-center mr-3`}
+            className={`${isPlaying ? 'bg-blue-600' : 'bg-blue-500 hover:bg-blue-600'} text-white rounded-full w-10 h-10 flex items-center justify-center mr-3 flex-shrink-0`}
             disabled={!audioURL || isLoading}
           >
             {isLoading ? (

@@ -615,7 +615,7 @@ export default function CameraCapture() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-2 h-screen max-h-screen overflow-hidden">
+    <div className="flex flex-col gap-2 h-full w-full overflow-hidden">
       <StatusDisplay 
         error={error} 
         message={statusMessage}
@@ -623,7 +623,7 @@ export default function CameraCapture() {
         isPressing={isPressing}
       />
       
-      <div className="relative flex-1 flex flex-col items-center max-h-[80vh]">
+      <div className="relative flex-1 flex flex-col items-center overflow-hidden">
         <Webcam
           ref={webcamRef}
           audio={false}
@@ -650,10 +650,12 @@ export default function CameraCapture() {
       
       {/* Only show the audio player when we have an AI response */}
       {audioURL && (
-        <AudioPlayer 
-          audioURL={audioURL} 
-          audioRef={audioRef}
-        />
+        <div className="w-full overflow-hidden">
+          <AudioPlayer 
+            audioURL={audioURL} 
+            audioRef={audioRef}
+          />
+        </div>
       )}
     </div>
   );

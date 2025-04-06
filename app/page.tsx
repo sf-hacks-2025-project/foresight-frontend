@@ -15,18 +15,18 @@ export default function Home() {
 
   return (
     <div 
-      className="flex flex-col items-center justify-center min-h-screen font-[family-name:var(--font-geist-sans)]"
+      className="flex flex-col items-center justify-between min-h-screen max-h-screen overflow-hidden font-[family-name:var(--font-geist-sans)]"
       onMouseDown={handlePressStart}
       onMouseUp={handlePressEnd}
       onMouseLeave={handlePressEnd}
       onTouchStart={handlePressStart}
       onTouchEnd={handlePressEnd}
     >
-      <main className="flex flex-col w-full max-h-[90vh] h-[90vh] items-center py-2 mb-24">
+      <main className="flex flex-col w-full h-full flex-grow items-center py-2 overflow-hidden">
         <h1 className="text-2xl font-bold mb-2 text-[var(--color-bittersweet-orange)]">Vision AI</h1>
         
         {/* Camera component that fills available vertical space */}
-        <div className="w-full h-full flex-grow flex flex-col px-4 max-w-2xl mx-auto relative">
+        <div className="w-full h-full flex-grow flex flex-col px-4 max-w-2xl mx-auto relative overflow-hidden">
           <CameraCapture />
           
           {/* Tap anywhere overlay - only show when camera is ready and not recording */}
@@ -39,7 +39,7 @@ export default function Home() {
           )}
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
+      <footer className="w-full py-2 flex gap-[24px] flex-wrap items-center justify-center shrink-0">
         {/* ... existing footer content ... */}
       </footer>
       
