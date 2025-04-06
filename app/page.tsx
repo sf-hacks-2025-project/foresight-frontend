@@ -35,13 +35,13 @@ export default function Home() {
             transition={{ duration: 0.5 }}
             className="flex items-center"
           >
-            <div className="w-10 h-10 mr-3 relative">
+            <div className="w-10 h-10 mr-3 relative flex items-center">
               <Image
-                src="/images/foresight-logo.png"
+                src="/images/foresight-logo.svg"
                 alt="Foresight Logo"
                 width={40}
                 height={40}
-                className="object-contain"
+                className="object-contain [filter:brightness(0)_saturate(100%)_invert(56%)_sepia(83%)_saturate(1095%)_hue-rotate(314deg)_brightness(101%)_contrast(101%)]"
               />
             </div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-[#FF7270] to-[#E15B73] bg-clip-text text-transparent">

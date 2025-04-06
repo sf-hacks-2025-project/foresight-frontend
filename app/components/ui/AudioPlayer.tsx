@@ -296,7 +296,7 @@ export function AudioPlayer({ audioURL, audioRef }: AudioPlayerProps) {
         })
         .catch((e) => {
           console.error("[AudioPlayer] Auto-play failed:", e)
-          setError("Auto-play blocked. Click play to listen.")
+          // setError("Auto-play blocked. Click play to listen.")
           // Reset volume if autoplay fails
           element.volume = 1
         })

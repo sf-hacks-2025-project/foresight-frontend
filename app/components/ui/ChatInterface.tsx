@@ -61,11 +61,11 @@ export function ChatInterface() {
     try {
       // Send the message to the API
       const response = await sendTextPrompt(userId, inputValue.trim())
-
+      console.log("[ChatInterface] Text prompt response:", response)
       // Create AI response message
       const aiMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        text: response.message || "I didn't understand that. Could you try again?",
+        text: response || "I didn't understand that. Could you try again?",
         sender: "ai",
         timestamp: new Date(),
       }
