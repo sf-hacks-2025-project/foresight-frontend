@@ -1,49 +1,42 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
+import { useState, useEffect } from "react"
 
 interface RecordButtonProps {
-  isRecording: boolean;
-  onRecordStart?: () => void;
-  onRecordStop?: () => void;
-  disabled?: boolean;
+  isRecording: boolean
+  onRecordStart?: () => void
+  onRecordStop?: () => void
+  disabled?: boolean
 }
 
-export function RecordButton({
-  isRecording,
-  onRecordStart,
-  onRecordStop,
-  disabled = false
-}: RecordButtonProps) {
-  const [isIOS, setIsIOS] = useState(false);
-  
+export function RecordButton({ isRecording, onRecordStart, onRecordStop, disabled = false }: RecordButtonProps) {
+  const [isIOS, setIsIOS] = useState(false)
+
   useEffect(() => {
     // Detect iOS device
-    const userAgent = window.navigator.userAgent.toLowerCase();
-    setIsIOS(/iphone|ipad|ipod/.test(userAgent));
-  }, []);
+    const userAgent = window.navigator.userAgent.toLowerCase()
+    setIsIOS(/iphone|ipad|ipod/.test(userAgent))
+  }, [])
 
   const handleClick = () => {
     if (isRecording) {
-      onRecordStop?.();
+      onRecordStop?.()
     } else {
-      onRecordStart?.();
+      onRecordStart?.()
     }
-  };
+  }
 
   return (
     <div className="w-full flex items-center justify-center my-2">
-      <div 
+      <div
         className={`flex items-center gap-2 px-4 py-2 rounded-full ${
-          isRecording 
-            ? 'bg-[var(--color-mandy-pink)] text-white' 
-            : 'bg-black bg-opacity-50 text-white'
-        } ${disabled ? 'opacity-50' : ''}`}
+          isRecording ? "bg-[var(--color-mandy-pink)] text-white" : "bg-black bg-opacity-50 text-white"
+        } ${disabled ? "opacity-50" : ""}`}
         onClick={disabled ? undefined : handleClick}
         onTouchStart={(e) => e.preventDefault()} // Prevent default behavior
         onTouchEnd={(e) => {
-          e.preventDefault();
-          if (!disabled) handleClick();
+          e.preventDefault()
+          if (!disabled) handleClick()
         }}
         aria-label={isRecording ? "Stop recording" : "Start recording"}
         role="button"
@@ -59,5 +52,6 @@ export function RecordButton({
         )}
       </div>
     </div>
-  );
+  )
 }
+
