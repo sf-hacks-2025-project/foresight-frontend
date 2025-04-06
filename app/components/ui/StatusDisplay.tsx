@@ -6,6 +6,7 @@ interface StatusDisplayProps {
   message: string
   error: string | null
   isRecording?: boolean
+  isPressing?: boolean
   lastImageTime?: string | null
   isVideoStopped?: boolean
 }
@@ -14,11 +15,12 @@ export function StatusDisplay({
   message,
   error,
   isRecording,
+  isPressing,
   lastImageTime,
   isVideoStopped,
 }: StatusDisplayProps) {
   return (
-    <div className="w-full px-4 py-2">
+    <div className="w-full px-4 py-2 z-20 relative flex-shrink-0 status-display">
       {/* Status information */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -26,11 +28,11 @@ export function StatusDisplay({
         transition={{ duration: 0.3 }}
         className={`text-sm p-3 rounded-xl ${
           isVideoStopped && !isRecording
-            ? "bg-gradient-to-r from-[#6A81FB]/10 to-[#6A81FB]/5 text-[#6A81FB] border border-[#6A81FB]/20"
+            ? "bg-gradient-to-r from-[#6A81FB]/20 to-[#6A81FB]/10 text-[#6A81FB] border border-[#6A81FB]/30"
             : isRecording
-              ? "bg-gradient-to-r from-[#E15B73]/10 to-[#E15B73]/5 text-[#FF7270] border border-[#E15B73]/20"
-              : "bg-gradient-to-r from-[#1D1D1D]/80 to-[#1D1D1D]/80 text-slate-300 border border-slate-700/50 backdrop-blur-sm"
-        } flex items-center justify-between`}
+              ? "bg-gradient-to-r from-[#E15B73]/20 to-[#E15B73]/10 text-[#FF7270] border border-[#E15B73]/30"
+              : "bg-gradient-to-r from-[#1D1D1D]/90 to-[#1D1D1D]/90 text-slate-300 border border-slate-700/50 backdrop-blur-sm"
+        } flex items-center justify-between shadow-md status-display-text`}
       >
         <div className="flex items-center">
           {isVideoStopped && !isRecording ? (
@@ -159,3 +161,4 @@ export function StatusDisplay({
     </div>
   )
 }
+

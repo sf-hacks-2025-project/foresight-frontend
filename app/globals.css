@@ -193,3 +193,34 @@ input[type="range"]::-webkit-slider-thumb {
   }
 }
 
+/* Add these mobile-specific styles at the end of the file */
+
+/* Mobile optimizations for status display and logs */
+@media (max-width: 767px) {
+  /* Ensure proper spacing at the bottom of the viewport */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+  }
+
+  /* Increase contrast for status messages on mobile */
+  .text-slate-400 {
+    color: rgba(226, 232, 240, 0.9);
+  }
+
+  /* Ensure the status display stands out more */
+  .status-display {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+    margin-bottom: env(safe-area-inset-bottom, 8px);
+  }
+
+  /* Adjust font size for better readability on small screens */
+  .status-display-text {
+    font-size: 0.8125rem;
+  }
+
+  /* Ensure the press indicator stays visible */
+  .fixed.bottom-0 {
+    bottom: env(safe-area-inset-bottom, 16px);
+  }
+}
+
