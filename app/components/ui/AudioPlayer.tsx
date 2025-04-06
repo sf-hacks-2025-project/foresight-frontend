@@ -3,33 +3,6 @@
 import { RefObject, useEffect, useState, useRef } from "react";
 import { useAppStore } from "../../store/useAppStore";
 
-// AudioContext for unlocking audio on mobile
-let audioContext: AudioContext | null = null;
-
-// Helper function to unlock audio context on mobile
-const unlockAudioContext = () => {
-  if (!audioContext) {
-    try {
-      window.AudioContext = window.AudioContext || (window as unknown as {webkitAudioContext: typeof AudioContext}).webkitAudioContext;
-      audioContext = new AudioContext();
-      
-      // Resume the audio context
-      if (audioContext.state === 'suspended') {
-        audioContext.resume();
-      }
-      
-      // Create and play a silent buffer to unlock the audio context
-      const buffer = audioContext.createBuffer(1, 1, 22050);
-      const source = audioContext.createBufferSource();
-      source.buffer = buffer;
-      source.connect(audioContext.destination);
-      source.start(0);
-    } catch (e) {
-      console.error('Failed to unlock audio context:', e);
-    }
-  }
-};
-
 interface AudioPlayerProps {
   audioURL: string;
   audioRef?: RefObject<HTMLAudioElement | null>;
@@ -45,71 +18,34 @@ export function AudioPlayer({ audioURL, audioRef }: AudioPlayerProps) {
   const [isMobile, setIsMobile] = useState(false);
   const localAudioRef = useRef<HTMLAudioElement>(null);
   const hasAutoPlayedRef = useRef(false);
-  const autoplayAttemptsRef = useRef(0);
-  const autoplayIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
   // Use the provided audioRef or our local one
   const audioElement = audioRef?.current || localAudioRef.current;
   
-  // Detect if user is on mobile device and set up audio context
+  // Detect if user is on mobile device
   useEffect(() => {
     const checkMobile = () => {
       const userAgent = navigator.userAgent.toLowerCase();
       return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
     };
     
-    const isMobileDevice = checkMobile();
-    setIsMobile(isMobileDevice);
+    setIsMobile(checkMobile());
     
-    // Unlock audio context on page load
-    unlockAudioContext();
-    
-    // Set up various event listeners to help with autoplay
-    const unlockEvents = ['touchstart', 'touchend', 'mousedown', 'keydown', 'scroll'];
-    
-    const unlockAudio = () => {
-      unlockAudioContext();
-      
-      // Try to play any audio element
-      const element = audioRef?.current || localAudioRef.current;
-      if (element && element.paused) {
-        element.muted = true; // Start muted to increase chances
-        element.play().then(() => {
-          setTimeout(() => {
-            element.muted = false;
-          }, 1000);
-        }).catch(() => {});
-      }
+    // Add a touch event listener to the document to help with autoplay
+    const enableAutoplay = () => {
+      // This creates a user gesture that might help with autoplay
+      document.removeEventListener('touchstart', enableAutoplay);
+      document.removeEventListener('click', enableAutoplay);
     };
     
-    // Add listeners for all unlock events
-    unlockEvents.forEach(event => {
-      document.addEventListener(event, unlockAudio, { once: true });
-    });
-    
-    // Simulate user interaction for iOS
-    if (isMobileDevice) {
-      // Create a temporary silent audio element and play it
-      const silentAudio = new Audio();
-      silentAudio.setAttribute('src', 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV6urq6urq6urq6urq6urq6urq6urq6urq6v////////////////////////////////8AAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA//sQZAAP8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==');
-      silentAudio.setAttribute('playsinline', '');
-      silentAudio.setAttribute('webkit-playsinline', '');
-      silentAudio.muted = true;
-      silentAudio.play().catch(() => {});
-    }
+    document.addEventListener('touchstart', enableAutoplay, { once: true });
+    document.addEventListener('click', enableAutoplay, { once: true });
     
     return () => {
-      // Clean up event listeners
-      unlockEvents.forEach(event => {
-        document.removeEventListener(event, unlockAudio);
-      });
-      
-      // Clear any autoplay interval
-      if (autoplayIntervalRef.current) {
-        clearInterval(autoplayIntervalRef.current);
-      }
+      document.removeEventListener('touchstart', enableAutoplay);
+      document.removeEventListener('click', enableAutoplay);
     };
-  }, [audioRef]); // Include audioRef in dependencies
+  }, []);
 
   useEffect(() => {
     if (!audioURL) {
@@ -121,19 +57,9 @@ export function AudioPlayer({ audioURL, audioRef }: AudioPlayerProps) {
     if (!element) return;
 
     hasAutoPlayedRef.current = false; // Reset for new audio
-    autoplayAttemptsRef.current = 0; // Reset attempts counter
-    
-    // Clear any existing autoplay interval
-    if (autoplayIntervalRef.current) {
-      clearInterval(autoplayIntervalRef.current);
-      autoplayIntervalRef.current = null;
-    }
   
     setIsLoading(true);
     console.log("[AudioPlayer] New audio URL:", audioURL, isMobile ? "(mobile device)" : "(desktop)");
-    
-    // Unlock audio context immediately
-    unlockAudioContext();
   
     const setupAudio = () => {
       // Reset state
@@ -144,85 +70,37 @@ export function AudioPlayer({ audioURL, audioRef }: AudioPlayerProps) {
         console.log("[AudioPlayer] Audio can play");
         setIsLoading(false);
         setDuration(element.duration);
-        
-        // Function to attempt autoplay
-        const attemptAutoplay = () => {
-          console.log(`[AudioPlayer] Autoplay attempt #${autoplayAttemptsRef.current + 1}`);
+  
+        // Always attempt autoplay regardless of device type
+        if (!hasAutoPlayedRef.current) {
+          hasAutoPlayedRef.current = true; // Prevent further auto-play attempts
+          console.log("[AudioPlayer] Attempting to play audio automatically on all devices");
           
-          // Unlock audio context before attempting to play
-          unlockAudioContext();
-          
-          // Set attributes that help with autoplay
-          element.muted = true;
+          // Set volume to 0 first (sometimes helps with autoplay)
           element.volume = 0;
           
-          // Try to play
+          // Use a user activation event to trigger playback
           const playPromise = element.play();
           
           if (playPromise !== undefined) {
             playPromise.then(() => {
-              console.log("[AudioPlayer] Autoplay successful!");
-              hasAutoPlayedRef.current = true;
-              
-              // If successful, gradually increase volume and unmute
-              setTimeout(() => {
-                element.muted = false;
-                let vol = 0;
-                const volumeInterval = setInterval(() => {
-                  if (vol < 1) {
-                    vol += 0.1;
-                    element.volume = Math.min(vol, 1);
-                  } else {
-                    clearInterval(volumeInterval);
-                  }
-                }, 50);
+              console.log("[AudioPlayer] Autoplay successful, gradually increasing volume");
+              // If successful, gradually increase volume
+              let vol = 0;
+              const volumeInterval = setInterval(() => {
+                if (vol < 1) {
+                  vol += 0.1;
+                  element.volume = Math.min(vol, 1);
+                } else {
+                  clearInterval(volumeInterval);
+                }
               }, 100);
-              
-              // Clear the retry interval if it exists
-              if (autoplayIntervalRef.current) {
-                clearInterval(autoplayIntervalRef.current);
-                autoplayIntervalRef.current = null;
-              }
             }).catch((e) => {
-              console.error("[AudioPlayer] Autoplay attempt failed:", e);
-              element.volume = 1; // Reset volume
-              
-              // Increment attempt counter
-              autoplayAttemptsRef.current++;
-              
-              // If we've tried less than 5 times, try again
-              if (autoplayAttemptsRef.current < 5 && !hasAutoPlayedRef.current) {
-                // Don't set error message during retry attempts
-                if (autoplayAttemptsRef.current === 4) {
-                  setError("Auto-play blocked. Click play to listen.");
-                }
-              } else if (autoplayIntervalRef.current) {
-                // Stop trying after 5 attempts
-                clearInterval(autoplayIntervalRef.current);
-                autoplayIntervalRef.current = null;
-              }
+              console.error("[AudioPlayer] Auto-play failed:", e);
+              setError("Auto-play blocked. Click play to listen.");
+              // Reset volume if autoplay fails
+              element.volume = 1;
             });
-          }
-        };
-        
-        // Always attempt autoplay regardless of device type
-        if (!hasAutoPlayedRef.current) {
-          // Try immediately
-          attemptAutoplay();
-          
-          // And set up an interval to try multiple times (mobile browsers sometimes need multiple attempts)
-          if (!autoplayIntervalRef.current) {
-            autoplayIntervalRef.current = setInterval(() => {
-              if (!hasAutoPlayedRef.current && autoplayAttemptsRef.current < 5) {
-                attemptAutoplay();
-              } else {
-                // Stop trying after success or 5 attempts
-                if (autoplayIntervalRef.current) {
-                  clearInterval(autoplayIntervalRef.current);
-                  autoplayIntervalRef.current = null;
-                }
-              }
-            }, 1000); // Try every second
           }
         }
       };
@@ -260,29 +138,21 @@ export function AudioPlayer({ audioURL, audioRef }: AudioPlayerProps) {
       element.setAttribute('playsinline', ''); // Important for iOS
       element.setAttribute('webkit-playsinline', ''); // For older iOS
       element.setAttribute('autoplay', ''); // Try native autoplay attribute
-      element.crossOrigin = 'anonymous'; // Allow cross-origin if needed
-      
-      // Force low latency mode if available (helps with mobile)
-      // Check for Firefox-specific autoplay property
-      if ('mozAutoplayEnabled' in element) {
-        (element as HTMLAudioElement & {mozAutoplayEnabled?: boolean}).mozAutoplayEnabled = true;
-      }
-      
-      // Load the audio
       element.load();
       
-      // Create a user gesture simulation
-      const simulateUserGesture = () => {
-        const event = new MouseEvent('touchend', {
-          view: window,
-          bubbles: true,
-          cancelable: true
-        });
-        document.dispatchEvent(event);
-      };
-      
-      // Simulate user gesture after a short delay
-      setTimeout(simulateUserGesture, 500);
+      // Unmute after a short delay (after autoplay hopefully succeeds)
+      setTimeout(() => {
+        if (element.paused) {
+          // If still paused, try playing again
+          element.play().catch(() => {
+            // Silent catch - we'll handle errors elsewhere
+            element.muted = false;
+          });
+        } else {
+          // If playing, unmute
+          element.muted = false;
+        }
+      }, 1000);
   
       return () => {
         element.removeEventListener("canplay", onCanPlay);
@@ -349,9 +219,6 @@ export function AudioPlayer({ audioURL, audioRef }: AudioPlayerProps) {
         ref={audioRef || localAudioRef}
         preload="auto"
         loop={false}
-        muted
-        autoPlay
-        playsInline
         style={{ display: 'none' }}
       />
       
