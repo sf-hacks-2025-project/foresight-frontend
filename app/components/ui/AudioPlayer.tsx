@@ -170,29 +170,6 @@ export function AudioPlayer({ audioURL, audioRef }: AudioPlayerProps) {
     element.volume = 0 // Start with volume at 0
     element.currentTime = 0 // Reset to beginning
 
-    // Use a single play attempt with gradual volume increase
-    const playAttempt = element
-      .play()
-      .then(() => {
-        console.log("[AudioPlayer] Delayed autoplay successful after user interaction")
-        
-        // Gradually increase volume
-        let vol = 0
-        volumeInterval = setInterval(() => {
-          if (vol < 1) {
-            vol += 0.5
-            element.volume = Math.min(vol, 1)
-          } else if (volumeInterval) {
-            clearInterval(volumeInterval)
-            volumeInterval = null
-          }
-        }, 100)
-      })
-      .catch((e) => {
-        console.error("[AudioPlayer] Delayed autoplay failed:", e)
-        element.volume = 1
-      })
-
     // Clean up function
     return () => {
       // Clear volume interval if it exists
@@ -225,24 +202,11 @@ export function AudioPlayer({ audioURL, audioRef }: AudioPlayerProps) {
     if (playPromise !== undefined) {
       playPromise
         .then(() => {
-          console.log("[AudioPlayer] Autoplay successful, gradually increasing volume")
-          
-          // Now gradually increase volume - we're NOT pausing and playing again
-          // which was causing the AbortError
-          let vol = 0
-          volumeInterval = setInterval(() => {
-            if (vol < 1) {
-              vol += 0.1
-              element.volume = Math.min(vol, 1)
-            } else if (volumeInterval) {
-              clearInterval(volumeInterval)
-              volumeInterval = null
-            }
-          }, 100)
+          console.log("[AudioPlayer] Autoplay successful, starting at full volume")
+          element.volume = 1
         })
         .catch((e) => {
           console.error("[AudioPlayer] Auto-play failed:", e)
-          // Reset volume if autoplay fails
           element.volume = 1
         })
     }
