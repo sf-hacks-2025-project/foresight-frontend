@@ -180,7 +180,7 @@ export function AudioPlayer({ audioURL, audioRef }: AudioPlayerProps) {
         let vol = 0
         volumeInterval = setInterval(() => {
           if (vol < 1) {
-            vol += 0.1
+            vol += 0.5
             element.volume = Math.min(vol, 1)
           } else if (volumeInterval) {
             clearInterval(volumeInterval)
