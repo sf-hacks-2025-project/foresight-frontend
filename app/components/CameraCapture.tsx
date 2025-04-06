@@ -109,6 +109,7 @@ export default function CameraCapture({ isVideoStopped = false }: CameraCaptureP
       setCameraReady(true)
       setError("")
       setStatusMessage("Camera ready")
+      
       logger("Camera initialized successfully")
     },
     [setupVideoElement, setCameraReady, setError, setStatusMessage],
