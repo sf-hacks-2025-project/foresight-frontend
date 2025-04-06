@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "VisionAI",
-  description: "VisionAI",
+  title: "Foresight",
+  description: "See the Past, Shape the Future.",
     generator: 'v0.dev'
 }
 

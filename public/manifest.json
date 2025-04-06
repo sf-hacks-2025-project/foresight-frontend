@@ -1,7 +1,7 @@
 {
-  "name": "Vision AI",
-  "short_name": "VisionAI",
-  "description": "AI-powered vision application",
+  "name": "Foresight",
+  "short_name": "Foresight",
+  "description": "See The Past, Shape The Future",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
