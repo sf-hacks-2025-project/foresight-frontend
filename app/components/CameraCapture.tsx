@@ -275,9 +275,9 @@ export default function CameraCapture({ isVideoStopped = false }: CameraCaptureP
               logger("Image uploaded successfully")
               setStatusMessage("Visual analysis complete")
             } catch (err: any) {
-              setError(`Upload error: ${err.message || "Unknown error"}`)
+              //setError(`Upload error: ${err.message || "Unknown error"}`)
               setStatusMessage("Analysis interrupted. Resuming...")
-              logger(`Upload error: ${err.message || "Unknown error"}`)
+              //logger(`Upload error: ${err.message || "Unknown error"}`)
             }
           } catch (err: any) {
             setError(`Image preparation error: ${err.message || "Unknown error"}`)
