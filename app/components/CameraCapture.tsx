@@ -380,7 +380,14 @@ export default function CameraCapture({ isVideoStopped = false }: CameraCaptureP
 
                       try {
                         setStatusMessage("Generating response...")
-                        const speechResult = await generateSpeech(userId, response)
+                        // Ensure response is a string before passing to generateSpeech
+                        const responseText = typeof response === 'string' 
+                          ? response 
+                          : response && typeof response === 'object' && 'text' in response 
+                            ? String(response.text)
+                            : JSON.stringify(response)
+                        
+                        const speechResult = await generateSpeech(userId, responseText)
 
                         // Always convert to Blob for consistent handling
                         let speechBlob: Blob
@@ -783,4 +790,3 @@ export default function CameraCapture({ isVideoStopped = false }: CameraCaptureP
     </div>
   )
 }
-
