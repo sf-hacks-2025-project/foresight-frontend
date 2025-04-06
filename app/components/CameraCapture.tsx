@@ -745,17 +745,6 @@ export default function CameraCapture({ isVideoStopped = false }: CameraCaptureP
           onTouchMove={handleTouchMove}
           onTouchEnd={handlePressRelease}
         />
-
-        {/* Foresight logo watermark */}
-        <div className="absolute bottom-4 left-4 opacity-30">
-          <Image
-            src="/images/foresight-logo.png"
-            alt="Foresight Logo"
-            width={24}
-            height={24}
-            className="object-contain"
-          />
-        </div>
       </div>
 
       {/* Status Display - moved below camera view */}

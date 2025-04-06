@@ -101,7 +101,7 @@ export default function Home() {
 
       <footer className="w-full py-4 px-6 flex flex-col items-center justify-center shrink-0 text-xs text-white/50 space-y-1">
         <span>Foresight</span>
-        <span className="text-white/30">Foresight • Created by Anson, Andrey, and Dima • SFHacks 2025</span>
+        <span className="text-white/30">Created by Anson, Andrey, and Dima • SFHacks 2025</span>
       </footer>
 
       {/* Recording indicator - edge glow effect similar to Siri */}
