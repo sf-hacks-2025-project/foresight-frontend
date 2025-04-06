@@ -288,7 +288,7 @@ export default function CameraCapture({ isVideoStopped = false }: CameraCaptureP
           setStatusMessage("Camera feed disrupted. Reconnecting...")
           logger("Failed to capture image from webcam")
         }
-      }, 25000)
+      }, 5555)
 
       return () => {
         if (imageUploadIntervalRef.current) {
@@ -749,16 +749,6 @@ export default function CameraCapture({ isVideoStopped = false }: CameraCaptureP
           onTouchEnd={handlePressRelease}
         />
 
-        {/* Foresight logo watermark */}
-        <div className="absolute bottom-4 left-4 opacity-30">
-          <Image
-            src="/images/foresight-logo.png"
-            alt="Foresight Logo"
-            width={24}
-            height={24}
-            className="object-contain"
-          />
-        </div>
       </div>
 
       {/* Status Display - guaranteed to be visible */}
